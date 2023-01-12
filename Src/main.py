@@ -72,6 +72,7 @@ class Paint(object):
     def setup(self):
         self.old_x = None
         self.old_y = None
+        self.stroke_num = 0
         self.line_width = self.choose_size_button.get()
         self.color = self.DEFAULT_COLOR
         self.eraser_on = False
@@ -85,6 +86,7 @@ class Paint(object):
 
     def use_pen(self):
         self.color = 'black'
+        self.eraser_on = False
 
     def set_dark(self):
         self.c.configure(bg='black')
@@ -109,21 +111,28 @@ class Paint(object):
 
     def use_eraser(self):
         self.eraserstatuslabel.configure(text='Eraser: On')
-        self.color = 'white'
+        self.eraser_on = True
 
-    def activate_button(self, some_button, eraser_mode=False):
-        self.active_button.configure(relief=RAISED)
-        some_button.configure(relief=SUNKEN)
-        self.active_button = some_button
-        self.eraser_on = eraser_mode
+    def erase(self, event):
+        overlapping = self.c.find_overlapping(event.x-5, event.y-5, event.x+5, event.y+5)
+        for item in overlapping:
+            tags = self.c.gettags(item)
+            lines = self.c.find_all()
+            for line in lines:
+                if self.c.gettags(line)[0] == tags[0]:
+                    self.c.delete(line)
+                    
 
     def paint(self, event):
+        if self.eraser_on:
+            self.erase(event)
+            return
         self.line_width = self.choose_size_button.get()
         paint_color = 'white' if self.eraser_on else self.color
         if self.old_x and self.old_y:
             self.c.create_line(self.old_x, self.old_y, event.x, event.y,
                                width=self.line_width, fill=paint_color,
-                               capstyle=ROUND, smooth=TRUE, splinesteps=36)
+                               capstyle=ROUND, smooth=TRUE, splinesteps=36, tags=f"{self.stroke_num}")
         self.old_x = event.x
         self.old_y = event.y
         print(self.old_x, self.old_y)
@@ -152,6 +161,7 @@ class Paint(object):
 
     def reset(self, event):
         self.old_x, self.old_y = None, None
+        self.stroke_num += 1
 
 
 if __name__ == '__main__':
