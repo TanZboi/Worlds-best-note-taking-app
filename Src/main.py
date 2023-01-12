@@ -128,10 +128,9 @@ class Paint(object):
             self.erase(event)
             return
         self.line_width = self.choose_size_button.get()
-        paint_color = 'white' if self.eraser_on else self.color
         if self.old_x and self.old_y:
             self.c.create_line(self.old_x, self.old_y, event.x, event.y,
-                               width=self.line_width, fill=paint_color,
+                               width=self.line_width, fill=self.color,
                                capstyle=ROUND, smooth=TRUE, splinesteps=36, tags=f"{self.stroke_num}")
         self.old_x = event.x
         self.old_y = event.y
